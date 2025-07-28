@@ -139,13 +139,19 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
         />
 
         <div className="flex items-center gap-4">
+          <label htmlFor="image" className="hidden">
+            Or upload an image:
+          </label>
           <input
             type="file"
+            id="image"
             accept="image/*"
+            name="image"
             capture="environment"
-            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-chart-2/5 file:text-chart-2 hover:file:bg-chart-2/10 file:border-chart-2"
+            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
             onChange={(e) => e.target.files && handleImage(e.target.files[0])}
             disabled={isLoading}
+            aria-label="Upload ingredients image"
           />
           {isLoading && (
             <div className="text-sm text-gray-500">Processing image...</div>
