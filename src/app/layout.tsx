@@ -94,14 +94,14 @@ export default function RootLayout({
             <main className="container mx-auto p-4 max-w-2xl flex flex-col items-center flex-1 justify-center space-y-4">
               {children}
             </main>
-            <footer className="text-center text-sm text-accent-foreground mt-8 bg-accent py-6 ">
+            <footer className="text-center text-sm text-muted-foreground mt-8 bg-muted py-6 ">
               <p>
                 Made with ❤️ by{" "}
                 <Link
                   href="https://ptchblvck.com"
                   prefetch={false}
                   referrerPolicy="no-referrer"
-                  className="text-blue-500 hover:underline"
+                  className="text-primary/80 underline hover:text-primary"
                 >
                   ptchblvck
                 </Link>
