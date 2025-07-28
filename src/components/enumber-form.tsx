@@ -143,7 +143,7 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
             type="file"
             accept="image/*"
             capture="environment"
-            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-chart-2/5 file:text-chart-2 hover:file:bg-chart-2/10 file:border-chart-2"
             onChange={(e) => e.target.files && handleImage(e.target.files[0])}
             disabled={isLoading}
           />
