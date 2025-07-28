@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "is this vegan?",
+  title: "Vegan E-number Checker",
   description: "Check if E-numbers are vegan on your products",
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main className="container mx-auto p-4 max-w-2xl flex flex-col items-center justify-center min-h-screen space-y-4">
+        <main className="container mx-auto p-4 max-w-2xl flex flex-col items-center min-h-base justify-center space-y-4">
           {children}
         </main>
         <footer className="text-center text-sm text-gray-500 mt-8 bg-accent py-6 ">
