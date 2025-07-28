@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Vegan E-number Checker",
   description: "Check if E-numbers are vegan on your products",
+  appleWebApp: {
+    title: "Venumbers",
+  },
 };
 
 export default function RootLayout({
@@ -28,6 +31,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <noscript>
+          <div
+            style={{
+              backgroundColor: "#ffdddd",
+              color: "#990000",
+              padding: "1rem",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            JavaScript is disabled in your browser. This site requires
+            JavaScript to function properly. Please enable it in your settings.
+          </div>
+        </noscript>
         <main className="container mx-auto p-4 max-w-2xl flex flex-col items-center min-h-base justify-center space-y-4">
           {children}
         </main>

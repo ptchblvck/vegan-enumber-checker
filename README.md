@@ -27,7 +27,7 @@ This website allows you to:
 1. Visit the homepage
 2. Type or paste the ingredient list into the text area
 3. Click "Check" button
-4. Get redirected to either `/yes` (all E-numbers are vegan) or `/no` (contains non-vegan E-numbers)
+4. View instant results showing whether all E-numbers are vegan
 
 ### Method 2: Image Upload
 
@@ -36,7 +36,7 @@ This website allows you to:
 3. Upload a photo of the ingredient label
 4. The OCR (Optical Character Recognition) will automatically extract text
 5. E-numbers are detected and analyzed
-6. Get redirected to the result page
+6. View instant results on the same page
 
 ## 🔍 Features
 
@@ -46,6 +46,7 @@ This website allows you to:
 - **Visual Feedback**: Color-coded E-numbers (green = vegan, red = non-vegan)
 - **Mobile Optimized**: Camera capture support for on-the-go checking
 - **Fast Processing**: Client-side OCR for instant results
+- **Inline Results**: Results displayed directly on the same page with animated feedback
 
 ## 📱 Technology Stack
 
@@ -62,7 +63,7 @@ This website allows you to:
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd enumbers
+cd friendly-waffle
 
 # Install dependencies
 npm install
@@ -88,15 +89,15 @@ The application follows a strict **ALL-OR-NOTHING** rule:
 
 **Scenario 1** - Input: "E100, E200, E300"
 
-- All three E-numbers are vegan → Result: `/yes`
+- All three E-numbers are vegan → Result: "Yes Product IS Vegan"
 
 **Scenario 2** - Input: "E100, E120, E300"
 
-- E120 (cochineal) is not vegan → Result: `/no`
+- E120 (cochineal) is not vegan → Result: "No Product is NOT Vegan"
 
 **Scenario 3** - Input: "E999, E1000"
 
-- E1000 is not in vegan database → Result: `/no`
+- E1000 is not in vegan database → Result: "No Product is NOT Vegan"
 
 ## 🎨 User Interface
 
@@ -106,12 +107,13 @@ The application follows a strict **ALL-OR-NOTHING** rule:
 - Text input area for manual entry
 - File upload with camera support
 - Real-time E-number detection and color coding
+- Inline result display with animated feedback
 
-### Results Pages
+### Result Display
 
-- **`/yes`**: Celebratory page confirming the product is vegan
-- **`/no`**: Clear indication that the product contains non-vegan ingredients
-- Both pages include "Check Another Product" button to return home
+- **Vegan Result**: Celebratory message with animated GIF confirming the product is vegan
+- **Non-Vegan Result**: Clear indication with animated GIF that the product contains non-vegan ingredients
+- Both results include "Check Another Product" button to reset the form
 
 ## 🔧 Technical Details
 
@@ -148,9 +150,9 @@ This project is open source and available under the [Apache License 2.0](LICENSE
 
 ## 🤝 Acknowledgments
 
-- Vegan E-numbers database compiled from various food safety authorities
-- Tesseract.js team for the excellent OCR library
-- Next.js team for the amazing framework
+- Vegan E-numbers database compiled from various food safety authorities like the [UK Food Standards Agency](https://www.food.gov.uk/business-guidance/approved-additives-and-e-numbers)
+- [Tesseract.js](https://tesseract.projectnaptha.com/) team for the excellent OCR library
+- [Next.js](https://nextjs.org/) team for the amazing framework
 
 ---
 
