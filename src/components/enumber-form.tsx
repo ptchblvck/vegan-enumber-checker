@@ -225,7 +225,6 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
                   name="image"
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
                   onChange={(e) => {
                     // If a file is selected, update the field and process the image
