@@ -21,6 +21,7 @@ import ThemeToggleServer from "@/components/theme/theme-toggle-server";
 const navigation = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
+  { name: "Privacy", href: "/privacy" },
 ];
 
 export default function Navigation() {
