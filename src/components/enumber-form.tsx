@@ -18,6 +18,9 @@ import { Button } from "@/components/ui/button";
 import processImage from "@/lib/process-image";
 import VeganResult from "./vegan-result";
 import { FormSubmissionIsVegan } from "@/lib/form-submission-is-vegan";
+import { Textarea } from "./ui/textarea";
+import { GiMagicBroom } from "react-icons/gi";
+import Broom from "./icons/broom";
 
 interface EnumberFormProps {
   className?: string;
@@ -26,6 +29,7 @@ interface EnumberFormProps {
 
 const EnumberFormSchema = z.object({
   text: z.string(),
+  image: z.instanceof(File).optional(),
   results: z.array(z.string()),
 });
 
@@ -47,6 +51,7 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     resolver: zodResolver(EnumberFormSchema),
     defaultValues: {
       text: "",
+      image: undefined,
       results: [],
     },
   });
@@ -60,7 +65,11 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
 
       const {
         data: { text: raw },
-      } = await worker.recognize(processedBlob);
+      } = await worker.recognize(
+        processedBlob,
+        { rotateAuto: true },
+        { imageColor: true, imageGrey: true, imageBinary: true }
+      );
 
       await worker.terminate();
       form.setValue("text", raw);
@@ -78,6 +87,15 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     const matches = raw.match(regex) || [];
     const unique = Array.from(new Set(matches.map((m) => m.toUpperCase())));
     form.setValue("results", unique);
+  }
+
+  function handleClear(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    form.setValue("text", "");
+    form.setValue("results", []);
+    setError(null);
+    setVeganStatus(FormSubmissionIsVegan.NotSubmitted);
+    form.resetField("image");
   }
 
   function onSubmit(values: FormData) {
@@ -123,40 +141,65 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
             <FormItem>
               <FormLabel>Ingredients Text</FormLabel>
               <FormControl>
-                <textarea
-                  className="w-full p-2 border rounded-md min-h-[100px]"
-                  placeholder="Type or paste ingredients"
-                  {...field}
-                />
+                <Textarea placeholder="Type or paste ingredients" {...field} />
               </FormControl>
-              <FormDescription>
-                Enter the ingredients text or upload an image to scan for
-                E-numbers
-              </FormDescription>
+              <div className="flex items-center justify-between">
+                <FormDescription>
+                  Enter the ingredients text or upload an image to scan for
+                  E-numbers
+                </FormDescription>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="bottom-0 right-0 min-h-11 min-w-11 p-1"
+                  onClick={handleClear}
+                  disabled={isLoading}
+                  aria-label="Clear ingredients text"
+                >
+                  <span className="sr-only">Clear ingredients text</span>
+                  <Broom />
+                  {/* <GiMagicBroom /> */}
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex items-center gap-4">
-          <label htmlFor="image" className="hidden">
-            Or upload an image:
-          </label>
-          <input
-            type="file"
-            id="image"
-            accept="image/*"
-            name="image"
-            capture="environment"
-            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
-            onChange={(e) => e.target.files && handleImage(e.target.files[0])}
-            disabled={isLoading}
-            aria-label="Upload ingredients image"
-          />
-          {isLoading && (
-            <div className="text-sm text-gray-500">Processing image...</div>
+        {/* File input for image upload */}
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-4">
+              <FormLabel className="hidden" htmlFor="image">
+                Upload Ingredients Image
+              </FormLabel>
+              <FormControl>
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      field.onChange(e.target.files[0]);
+                      handleImage(e.target.files[0]);
+                    }
+                  }}
+                  disabled={isLoading}
+                  aria-label="Upload ingredients image"
+                />
+              </FormControl>
+              {isLoading && (
+                <FormDescription>Processing image...</FormDescription>
+              )}
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
@@ -174,8 +217,8 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
                         key={number}
                         className={`px-2 py-1 text-sm rounded ${
                           veganSet.has(number.toUpperCase())
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-800 border border-green-800 dark:border-transparent"
+                            : "bg-red-100 text-red-800 border border-red-800 dark:border-transparent"
                         }`}
                       >
                         {number}
