@@ -296,11 +296,6 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
                   />
                 </label>
               </FormControl>
-              {selectedFileName && !isLoading && (
-                <FormDescription className="md:hidden">
-                  Selected: {selectedFileName}
-                </FormDescription>
-              )}
               {isLoading && (
                 <div className="absolute w-full h-full bg-muted border border-primary rounded-md flex items-center justify-center gap-2">
                   <span className="text-muted-foreground">
