@@ -1,5 +1,5 @@
 "use client";
-import { FC, useMemo, useState, useEffect, useCallback } from "react";
+import { FC, useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Form,
@@ -20,6 +20,9 @@ import VeganResult from "./vegan-result";
 import { FormSubmissionIsVegan } from "@/lib/form-submission-is-vegan";
 import { Textarea } from "./ui/textarea";
 import Broom from "./icons/broom";
+import { IoCameraSharp } from "react-icons/io5";
+import { DotWave } from "ldrs/react";
+import "ldrs/react/DotWave.css";
 
 interface EnumberFormProps {
   className?: string;
@@ -40,6 +43,9 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     FormSubmissionIsVegan.NotSubmitted
   );
   const [error, setError] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const desktopInputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const veganSet = useMemo(
     () => new Set(veganENumbers.map((e) => e.toUpperCase())),
     [veganENumbers]
@@ -85,6 +91,8 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
   async function handleImage(file: File) {
     setIsLoading(true);
     setError(null);
+    setSelectedFileName(file.name);
+
     try {
       const processedBlob = await processImage(file);
       const worker = await createWorker();
@@ -121,6 +129,16 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     }
   }
 
+  function clearFileInputs() {
+    if (desktopInputRef.current) {
+      desktopInputRef.current.value = "";
+    }
+    if (mobileInputRef.current) {
+      mobileInputRef.current.value = "";
+    }
+    setSelectedFileName(null);
+  }
+
   function handleClear(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
@@ -129,6 +147,9 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     form.setValue("results", []);
     form.clearErrors();
     form.resetField("image");
+
+    // Clear file inputs
+    clearFileInputs();
 
     // Clear component state
     setError(null);
@@ -215,30 +236,78 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
           control={form.control}
           name="image"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-4">
+            <FormItem className="relative flex items-center gap-4">
               <FormLabel className="hidden" htmlFor="image">
                 Upload Ingredients Image
               </FormLabel>
               <FormControl>
                 <input
+                  ref={desktopInputRef}
                   id="image"
                   name="image"
                   type="file"
                   accept="image/*"
-                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
+                  className="block w-full min-h-11 text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-1 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 file:border-primary"
                   onChange={(e) => {
                     // If a file is selected, update the field and process the image
                     if (e.target.files && e.target.files[0]) {
                       field.onChange(e.target.files[0]);
                       handleImage(e.target.files[0]);
+                      // Clear the mobile input to avoid confusion
+                      if (mobileInputRef.current) {
+                        mobileInputRef.current.value = "";
+                      }
                     }
                   }}
                   disabled={isLoading}
                   aria-label="Upload ingredients image"
                 />
               </FormControl>
+              <FormLabel className="sr-only" htmlFor="image-mobile">
+                Upload Ingredients Image (Mobile)
+              </FormLabel>
+              <FormControl>
+                <label
+                  htmlFor="image-mobile"
+                  className="flex md:hidden items-center justify-center min-w-11 min-h-11 px-2 text-primary bg-primary/5 hover:bg-primary/10 border-2 border-primary rounded-full cursor-pointer transition-colors"
+                >
+                  <IoCameraSharp size={26} />
+                  <span className="sr-only">Upload ingredients image</span>
+                  <input
+                    ref={mobileInputRef}
+                    id="image-mobile"
+                    name="image-mobile"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        field.onChange(e.target.files[0]);
+                        handleImage(e.target.files[0]);
+                        // Clear the desktop input to avoid confusion
+                        if (desktopInputRef.current) {
+                          desktopInputRef.current.value = "";
+                        }
+                      }
+                    }}
+                    disabled={isLoading}
+                    aria-label="Upload ingredients image"
+                  />
+                </label>
+              </FormControl>
+              {selectedFileName && !isLoading && (
+                <FormDescription className="md:hidden">
+                  Selected: {selectedFileName}
+                </FormDescription>
+              )}
               {isLoading && (
-                <FormDescription>Processing image...</FormDescription>
+                <div className="absolute w-full h-full bg-muted border border-primary rounded-md flex items-center justify-center gap-2">
+                  <span className="text-muted-foreground">
+                    Processing image
+                  </span>
+                  <DotWave color="var(--muted-foreground)" size={30} />
+                </div>
               )}
               <FormMessage />
             </FormItem>
@@ -285,7 +354,7 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
           disabled={isLoading || form.watch("results").length === 0}
         >
           <span className="sr-only">Check E-numbers</span>
-          {isLoading ? "Processing..." : "Check"}
+          Check
         </Button>
       </form>
     </Form>
