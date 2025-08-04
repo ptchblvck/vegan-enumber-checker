@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CookieConsentManager } from "@/components/cookie-consent";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | How We Handle Your Data",
@@ -216,6 +217,63 @@ export default function Privacy() {
             our source code to verify our privacy claims and see exactly how
             your data is processed.
           </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Cookies Policy</h2>
+          <p className="text-muted-foreground">
+            Our website uses cookies to enhance your browsing experience.
+            Cookies are small text files stored on your device that help us
+            provide you with a better experience. Here&apos;s how we use them:
+          </p>
+
+          <div className="space-y-4 mt-4">
+            <div className="border border-border rounded-lg p-4">
+              <h3 className="font-medium mb-2">Essential Cookies</h3>
+              <p className="text-sm text-muted-foreground">
+                These cookies are necessary for the website to function
+                properly. They enable basic functions like page navigation and
+                access to secure areas of the website. The website cannot
+                function properly without these cookies.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg p-4">
+              <h3 className="font-medium mb-2">Analytics Cookies</h3>
+              <p className="text-sm text-muted-foreground">
+                These cookies help us understand how visitors interact with our
+                website. They provide information about metrics such as the
+                number of visitors, bounce rate, traffic source, etc. This helps
+                us improve our website.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg p-4">
+              <h3 className="font-medium mb-2">Marketing Cookies</h3>
+              <p className="text-sm text-muted-foreground">
+                These cookies are used to track visitors across websites. The
+                intention is to display ads that are relevant and engaging for
+                the individual user and thereby more valuable for publishers and
+                third-party advertisers.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-muted-foreground mt-4">
+            You can adjust your cookie preferences at any time using our cookie
+            consent banner or by resetting your preferences below.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Cookie Preferences</h2>
+          <p className="text-muted-foreground">
+            We use cookies to enhance your browsing experience. You can reset
+            your cookie preferences at any time:
+          </p>
+          <div className="justify-center hidden md:flex">
+            <CookieConsentManager />
+          </div>
         </section>
 
         <section className="space-y-4">

@@ -4,6 +4,10 @@ import "@/style/globals.css";
 import Link from "next/link";
 import Navigation from "@/components/navigation";
 import { ThemeProvider } from "@/components/theme-provider";
+import {
+  CookieConsent,
+  CookieConsentManager,
+} from "@/components/cookie-consent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -95,18 +99,24 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="text-center text-sm text-muted-foreground mt-8 bg-muted py-6 ">
-              <p>
-                Made with ❤️ by{" "}
-                <Link
-                  href="https://ptchblvck.com"
-                  prefetch={false}
-                  referrerPolicy="no-referrer"
-                  className="text-primary/80 underline hover:text-primary"
-                >
-                  ptchblvck
-                </Link>
-              </p>
+              <div className="flex flex-col items-center gap-4">
+                <p>
+                  Made with ❤️ by{" "}
+                  <Link
+                    href="https://ptchblvck.com"
+                    prefetch={false}
+                    referrerPolicy="no-referrer"
+                    className="text-primary/80 underline hover:text-primary"
+                  >
+                    ptchblvck
+                  </Link>
+                </p>
+                <span className="hidden md:inline">
+                  <CookieConsentManager />
+                </span>
+              </div>
             </footer>
+            <CookieConsent />
           </div>
         </ThemeProvider>
       </body>
