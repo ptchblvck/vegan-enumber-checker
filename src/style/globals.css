@@ -82,6 +82,9 @@
 
   --accent: oklch(0.4 0.12 140); /* Slightly brighter emerald */
   --accent-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.4 0.09 260);
+  --secondary-foreground: oklch(0.985 0 0);
 }
 
 .dark {
@@ -122,6 +125,9 @@
 
   --accent: oklch(0.85 0.14 140);
   --accent-foreground: oklch(0.205 0 0);
+
+  --secondary: oklch(0.8195 0.09 260);
+  --secondary-foreground: oklch(0.205 0 0);
 }
 
 @layer base {

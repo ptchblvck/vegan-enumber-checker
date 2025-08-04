@@ -16,10 +16,14 @@ const buttonVariants = cva(
         outline:
           "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:text-accent dark:hover:border-accent dark:hover:bg-input", // dark:bg-input/30 dark:border-input dark:hover:bg-input/50
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+          "bg-secondary/90 text-secondary-foreground shadow-xs hover:bg-secondary",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent",
         link: "text-primary underline-offset-4 hover:underline",
+        ghostmuted:
+          "text-muted-foreground border border-muted hover:bg-muted/50 hover:text-secondary",
+        ghostline:
+          "text-muted-foreground border shadow-xs hover:bg-transparent hover:text-secondary hover:border-secondary focus-visible:ring-secondary/20 dark:hover:text-secondary/80 dark:hover:border-secondary/80",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

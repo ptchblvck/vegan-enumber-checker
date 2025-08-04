@@ -17,6 +17,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import ThemeToggleServer from "@/components/theme/theme-toggle-server";
+import { CookieConsentManager } from "./cookie-consent";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -104,6 +105,7 @@ export default function Navigation() {
                       {item.name}
                     </Link>
                   ))}
+                  <CookieConsentManager />
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
