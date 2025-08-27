@@ -11,12 +11,14 @@ interface VeganResultProps {
   className?: string;
   handleOnClick?: () => void;
   isVegan: boolean;
+  eNumbers?: Array<{ code: string; name: string }>;
 }
 
 const VeganResult: FC<VeganResultProps> = ({
   className,
   handleOnClick,
   isVegan,
+  eNumbers,
 }) => {
   return (
     <div
@@ -36,6 +38,23 @@ const VeganResult: FC<VeganResultProps> = ({
           </span>
         )}
       </h1>
+
+      {eNumbers && eNumbers.length > 0 && (
+        <div className="max-w-md w-full space-y-2">
+          <h2 className="text-lg font-semibold text-center">
+            E-numbers found:
+          </h2>
+          <div className="bg-muted rounded-lg p-4 space-y-1">
+            {eNumbers.map(({ code, name }) => (
+              <div key={code} className="text-sm">
+                <span className="font-mono font-medium">{code}</span>
+                <span className="text-muted-foreground"> - {name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Image
         src={isVegan ? "/yes.gif" : "/no.gif"}
         alt={

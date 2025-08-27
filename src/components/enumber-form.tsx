@@ -23,14 +23,16 @@ import Broom from "./icons/broom";
 import { IoCameraSharp } from "react-icons/io5";
 import { DotWave } from "ldrs/react";
 import "ldrs/react/DotWave.css";
+import { ENumberArrayItem } from "@/lib/e-numbers/vegan-e-numbers-full";
 
 interface EnumberFormProps {
   className?: string;
-  veganENumbers: string[];
+  veganENumbers: ENumberArrayItem[];
 }
 
 const EnumberFormSchema = z.object({
-  text: z.string().min(1, "Please enter some text to check for E-numbers"),
+  text: z.string(),
+  processedImageText: z.string().optional(), // Hidden field for processed image data
   image: z.instanceof(File).optional(),
   results: z.array(z.string()),
 });
@@ -44,10 +46,18 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
   );
   const [error, setError] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [foundENumbers, setFoundENumbers] = useState<
+    Array<{ code: string; name: string }>
+  >([]);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const veganSet = useMemo(
-    () => new Set(veganENumbers.map((e) => e.toUpperCase())),
+    () =>
+      new Set(
+        veganENumbers
+          .filter((item) => item.vegan === true)
+          .map((item) => item.code.toUpperCase())
+      ),
     [veganENumbers]
   );
 
@@ -55,6 +65,7 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     resolver: zodResolver(EnumberFormSchema),
     defaultValues: {
       text: "",
+      processedImageText: "",
       image: undefined,
       results: [],
     },
@@ -62,13 +73,45 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     reValidateMode: "onChange", // Re-validate immediately on change after first validation
   });
 
-  // Watch the text field for real-time processing
+  // Watch both text fields for real-time processing
   const watchedText = useWatch({
     control: form.control,
     name: "text",
   });
 
-  const processText = useCallback(
+  const watchedProcessedImageText = useWatch({
+    control: form.control,
+    name: "processedImageText",
+  });
+
+  // Process manual text input - looks for E-numbers with or without "E" prefix
+  const processManualText = useCallback(
+    (raw: string) => {
+      // Match both "E100" format and plain numbers like "100" that could be E-numbers
+      const eNumberRegex = /\b[Ee][- ]?\d{3,4}[a-z]?\b/gi;
+      const plainNumberRegex = /\b\d{3,4}[a-z]?\b/g;
+
+      const eNumbers = raw.match(eNumberRegex) || [];
+      const plainNumbers = raw.match(plainNumberRegex) || [];
+
+      // Convert plain numbers to E-number format
+      const convertedNumbers = plainNumbers.map(
+        (num) => `E${num.toUpperCase()}`
+      );
+
+      // Combine both types and remove duplicates
+      const allMatches = [...eNumbers, ...convertedNumbers];
+      const unique = Array.from(
+        new Set(allMatches.map((m) => m.toUpperCase()))
+      );
+
+      form.setValue("results", unique);
+    },
+    [form]
+  );
+
+  // Process image OCR text - looks for standard E-number format only
+  const processImageText = useCallback(
     (raw: string) => {
       const regex = /\b[Ee][- ]?\d{3,4}[a-z]?\b/gi;
       const matches = raw.match(regex) || [];
@@ -78,15 +121,29 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     [form]
   );
 
-  // Process text whenever it changes
+  // Process manual text input whenever it changes
   useEffect(() => {
     if (watchedText) {
-      processText(watchedText);
-    } else {
-      // Clear results when text is empty
+      processManualText(watchedText);
+      // Clear any manual validation errors when text is entered
+      form.clearErrors("text");
+    } else if (!(watchedProcessedImageText ?? "")) {
+      // Clear results only if both text fields are empty
       form.setValue("results", []);
     }
-  }, [watchedText, form, processText]);
+  }, [watchedText, watchedProcessedImageText, form, processManualText]);
+
+  // Process image text whenever it changes
+  useEffect(() => {
+    if (watchedProcessedImageText) {
+      processImageText(watchedProcessedImageText);
+      // Clear any manual validation errors when image is processed
+      form.clearErrors("text");
+    } else if (!watchedText) {
+      // Clear results only if both text fields are empty
+      form.setValue("results", []);
+    }
+  }, [watchedProcessedImageText, watchedText, form, processImageText]);
 
   async function handleImage(file: File) {
     setIsLoading(true);
@@ -107,20 +164,20 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
 
       await worker.terminate();
 
-      // Clear any existing validation errors for the text field
+      // Clear any existing validation errors
       form.clearErrors("text");
 
-      // Set the text value and trigger validation and mark as touched
-      form.setValue("text", raw, {
-        shouldValidate: true,
+      // Set the processed image text value (hidden field)
+      form.setValue("processedImageText", raw, {
+        shouldValidate: false, // Don't validate immediately
         shouldDirty: true,
         shouldTouch: true,
       });
 
-      // Force re-validation to ensure form state is updated
-      await form.trigger("text");
+      // Clear the manual text input when processing an image
+      form.setValue("text", "");
 
-      // processText will be called automatically via useEffect watching the text field
+      // processImageText will be called automatically via useEffect watching the processedImageText field
     } catch (err) {
       setError("Failed to process image. Please try again.");
       console.error("OCR error:", err);
@@ -144,9 +201,10 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
 
     // Clear all form fields and validation errors
     form.setValue("text", "", { shouldValidate: true });
+    form.setValue("processedImageText", "", { shouldValidate: true });
     form.setValue("results", []);
+    form.setValue("image", undefined, { shouldValidate: true });
     form.clearErrors();
-    form.resetField("image");
 
     // Clear file inputs
     clearFileInputs();
@@ -163,11 +221,41 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     // The results are already updated via useEffect, so we can use them directly
     const allENumbers = values.results;
 
+    // Check if we have any results (E-numbers found)
     if (allENumbers.length === 0) {
-      setError(
-        "No E-numbers found in the text. Please ensure your text contains E-numbers (e.g., E100, E200)."
-      );
-      return;
+      // Check if either text or processedImageText has content to give appropriate error message
+      const hasManualText = values.text && values.text.length > 0;
+      const hasProcessedText =
+        values.processedImageText && values.processedImageText.length > 0;
+
+      if (!hasManualText && !hasProcessedText) {
+        form.setError("text", {
+          type: "manual",
+          message:
+            "Please enter some text or upload an image to check for E-numbers",
+        });
+        return;
+      } else {
+        // Provide context-aware error message
+        const hasManualText = values.text && values.text.length > 0;
+        const hasProcessedText =
+          values.processedImageText && values.processedImageText.length > 0;
+
+        if (hasProcessedText && !hasManualText) {
+          setError(
+            "No E-numbers found in the uploaded image. Please ensure your image contains visible E-numbers (e.g., E100, E200) or try entering the ingredients manually."
+          );
+        } else if (hasManualText && !hasProcessedText) {
+          setError(
+            "No E-numbers found in the text. Please ensure your text contains E-numbers (e.g., E100, E200 or just 100, 200)."
+          );
+        } else {
+          setError(
+            "No E-numbers found. Please ensure your input contains E-numbers (e.g., E100, E200)."
+          );
+        }
+        return;
+      }
     }
 
     // Check if ALL E-numbers are vegan
@@ -175,6 +263,18 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
       veganSet.has(eNumber.toUpperCase())
     );
 
+    // Create the array of found E-numbers with their names
+    const eNumbersWithNames = allENumbers.map((eNumber) => {
+      const foundENumber = veganENumbers.find(
+        (item) => item.code.toUpperCase() === eNumber.toUpperCase()
+      );
+      return {
+        code: eNumber.toUpperCase(),
+        name: foundENumber?.name || "Unknown",
+      };
+    });
+
+    setFoundENumbers(eNumbersWithNames);
     setVeganStatus(
       allVegan ? FormSubmissionIsVegan.Yes : FormSubmissionIsVegan.No
     );
@@ -184,6 +284,7 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
     return (
       <VeganResult
         isVegan={veganStatus === FormSubmissionIsVegan.Yes}
+        eNumbers={foundENumbers}
         handleOnClick={() => {
           return setVeganStatus(FormSubmissionIsVegan.NotSubmitted);
         }}
@@ -205,14 +306,15 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
               <FormLabel>Ingredients Text</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Type or paste ingredients (e.g., 'Contains E100, E200, Salt, Water')"
+                  placeholder="e.g., Contains 100, E200, carrageenan, salt, water..."
                   {...field}
                 />
               </FormControl>
               <div className="flex items-center justify-between gap-2">
                 <FormDescription>
-                  Enter the ingredients text or upload an image to scan for
-                  E-numbers
+                  Type ingredients manually or use the camera/file upload below.
+                  Numbers like &quot;100&quot; are automatically recognized as
+                  &quot;E100&quot;.
                 </FormDescription>
                 <Button
                   variant="outline"
@@ -228,6 +330,20 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
               </div>
               <FormMessage />
             </FormItem>
+          )}
+        />
+
+        {/* Hidden field for processed image text */}
+        <FormField
+          control={form.control}
+          name="processedImageText"
+          render={({ field }) => (
+            <input
+              type="hidden"
+              {...field}
+              value={field.value ?? ""}
+              onChange={(e) => field.onChange(e.target.value)}
+            />
           )}
         />
 
@@ -346,7 +462,12 @@ const EnumberForm: FC<EnumberFormProps> = ({ className, veganENumbers }) => {
         <Button
           type="submit"
           className="w-full"
-          disabled={isLoading || form.watch("results").length === 0}
+          disabled={
+            isLoading ||
+            (form.watch("results").length === 0 &&
+              !form.watch("text") &&
+              !(form.watch("processedImageText") ?? ""))
+          }
         >
           <span className="sr-only">Check E-numbers</span>
           Check
