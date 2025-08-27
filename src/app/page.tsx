@@ -1,6 +1,6 @@
-import veganENumbers from "@/lib/e-numbers";
 import EnumberForm from "@/components/enumber-form";
 import { Suspense } from "react";
+import { veganENumbersFull } from "@/lib/e-numbers/vegan-e-numbers-full";
 
 export default function Home() {
   return (
@@ -15,7 +15,7 @@ export default function Home() {
         </p>
       </article>
       <Suspense fallback={<div>Loading...</div>}>
-        <EnumberForm veganENumbers={veganENumbers} />
+        <EnumberForm veganENumbers={veganENumbersFull} />
       </Suspense>
 
       <aside className="mt-8 p-4 bg-muted rounded-lg">
